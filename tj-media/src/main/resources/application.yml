@@ -1,0 +1,88 @@
+server:
+  port: 8084  #端口
+  tomcat:
+    uri-encoding: UTF-8   #服务编码
+spring:
+  profiles:
+    active: dev
+  application:
+    name: media-service
+tj:
+  swagger:
+    enable: true
+    package-path: com.tianji.media.controller
+    title: LearnHub - 媒资中心接口文档
+    description: 该服务包含图片管理、媒资管理等
+    contact-name: 传智教育·研究院
+    contact-url: http://www.itcast.cn/
+    contact-email: zhanghuyi@itcast.cn
+    version: v1.0
+    enableResponseWrap: true
+  auth:
+    resource:
+      enable: true
+      excludeLoginPaths:
+        - /medias/signature/play
+        # 课程和文件内容由媒资服务公开访问，并根据文件来源选择正确的存储账号。
+        - /files/*/content
+  jdbc:
+    database: tj_media
+  platform:
+    file: TENCENT
+#    file: ALI
+    media: TENCENT
+  ali:
+    accessId: "*******"
+    accessKey: "*******"
+    oss:
+      endpoint: "*******"
+      bucket: "*******"
+  tencent:
+    # 黑马官方腾讯云根级账号；生产环境密钥由 Nacos 配置，不要提交到代码仓库
+    appId: 1312394356
+    vod:
+      enable: true
+      vodValidSeconds: 7776000
+      region: "ap-shanghai"
+      procedure: "wisehub-base"
+      # psign 使用的播放器签名密钥，不是 Key 防盗链密钥
+      urlKey: "HZFlxjPYoOm5AfShupOx"
+      pfcg: "basicDrmPreset"
+      event-pull:
+        enabled: false
+        fixed-delay: 10000
+    # 自有 VOD，新上传视频、Key 防盗链播放地址和删除操作统一使用此账号
+    # SecretId、SecretKey 和防盗链 Key 必须在 Nacos 或环境变量中配置，禁止提交真实密钥
+    own-vod:
+      enable: true
+      appId: 1479043174
+      secretId: ${TENCENT_OWN_VOD_SECRET_ID:}
+      secretKey: ${TENCENT_OWN_VOD_SECRET_KEY:}
+      vodValidSeconds: 7776000
+      region: "ap-shanghai"
+      procedure: ""
+      # 必须填写自有 VOD 的 Key 防盗链密钥，用于生成播放地址中的 t、sign 参数
+      urlKey: ${TENCENT_OWN_VOD_URL_KEY:}
+      pfcg: ""
+      event-pull:
+        enabled: false
+        fixed-delay: 10000
+    # 黑马官方 COS，保留原有配置，用于历史图片等文件
+    cos:
+      enable: true
+      region: "ap-shanghai"
+      bucket: wisehub
+      multipartUploadThreshold: 5242880 # 5mb，触发分片上传的阈值
+      minimumUploadPartSize: 1048576 # 1mb，分片的最小大小
+
+    # 自有 COS，新上传图片使用此配置；生产环境请在 Nacos 中补充密钥
+    own-cos:
+      enable: true
+      appId: 1479043174
+      # 自有 COS 密钥必须独立配置，禁止回退到黑马官方账号
+      secretId: ${TENCENT_OWN_COS_SECRET_ID:}
+      secretKey: ${TENCENT_OWN_COS_SECRET_KEY:}
+      region: "ap-shanghai"
+      bucket: syaig
+      multipartUploadThreshold: 5242880 # 5mb，触发分片上传的阈值
+      minimumUploadPartSize: 1048576 # 1mb，分片的最小大小

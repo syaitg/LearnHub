@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tianji.exam.mapper.PracticeAnswerMapper">
+
+    <resultMap id="PracticeAiReviewItemResultMap" type="com.tianji.exam.domain.vo.PracticeAiReviewItemVO">
+        <id property="answerId" column="answer_id"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="practiceQuestionId" column="practice_question_id"/>
+        <result property="questionId" column="question_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="targetBizId" column="target_biz_id"/>
+        <result property="targetName" column="target_name"/>
+        <result property="studentId" column="student_id"/>
+        <result property="sequenceNo" column="sequence_no"/>
+        <result property="questionName" column="question_name"/>
+        <result property="questionType" column="question_type"/>
+        <result property="questionScore" column="question_score"/>
+        <result property="standardAnswer" column="standard_answer"/>
+        <result property="analysis" column="analysis"/>
+        <result property="studentAnswer" column="student_answer"/>
+        <result property="answerStatus" column="answer_status"/>
+        <result property="aiSuggestedScore" column="ai_suggested_score"/>
+        <result property="aiTotalScore" column="ai_total_score"/>
+        <result property="matchedPoints" column="matched_points"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result property="missingPoints" column="missing_points"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result property="incorrectStatements" column="incorrect_statements"
+                typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result property="improvementSuggestion" column="improvement_suggestion"/>
+        <result property="confidence" column="confidence"/>
+        <result property="manualReviewRecommended" column="manual_review_recommended"/>
+        <result property="rubricVersion" column="rubric_version"/>
+        <result property="evaluatedTime" column="evaluated_time"/>
+    </resultMap>
+
+    <select id="selectPendingAiReviewPage" resultMap="PracticeAiReviewItemResultMap">
+        SELECT
+            pa.id AS answer_id,
+            pa.session_id,
+            pa.practice_question_id,
+            pa.question_id,
+            ps.course_id,
+            ps.target_biz_id,
+            ps.target_name,
+            ps.user_id AS student_id,
+            pq.sequence_no,
+            pq.name AS question_name,
+            pq.type AS question_type,
+            pq.score AS question_score,
+            pq.standard_answer,
+            pq.analysis,
+            pa.student_answer,
+            pa.status AS answer_status,
+            pa.ai_suggested_score,
+            pa.ai_total_score,
+            pa.matched_points,
+            pa.missing_points,
+            pa.incorrect_statements,
+            pa.improvement_suggestion,
+            pa.confidence,
+            pa.manual_review_recommended,
+            pa.rubric_version,
+            pa.evaluated_time
+        FROM practice_answer pa
+        INNER JOIN practice_session ps ON ps.id = pa.session_id
+        INNER JOIN practice_question pq ON pq.id = pa.practice_question_id
+        WHERE ps.course_id = #{query.courseId}
+          AND pq.type = 5
+          AND pa.status = 'AI_REVIEWED'
+        <if test="query.targetBizId != null">
+            AND ps.target_biz_id = #{query.targetBizId}
+        </if>
+        <if test="query.studentId != null">
+            AND ps.user_id = #{query.studentId}
+        </if>
+        <if test="query.manualReviewRecommended != null">
+            AND pa.manual_review_recommended = #{query.manualReviewRecommended}
+        </if>
+        <if test="query.minConfidence != null">
+            AND pa.confidence &gt;= #{query.minConfidence}
+        </if>
+        <if test="query.maxConfidence != null">
+            AND pa.confidence &lt;= #{query.maxConfidence}
+        </if>
+        ORDER BY pa.evaluated_time DESC, pa.id DESC
+    </select>
+</mapper>
